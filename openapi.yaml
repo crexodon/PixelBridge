@@ -1,0 +1,185 @@
+openapi: '3.0.2'
+info:
+  title: PixelBridge REST API
+  description: API to control the Window Matrix PixelBridge via REST commands
+  version: '1.0'
+servers:
+  - url: http://localhost:8081/v1
+tags:
+  - name: Pixels
+    description: Setting pixels of the matrix
+  - name: Sensors
+    description: For sensors or feedback like brightness, power consumption or connected sensors
+  - name: Config
+    description: Setting On/Off, Brightness, On/Off-Timer, Modes
+paths:
+  /pixels:
+    get:
+      tags:
+        - 'Pixels'
+      operationId: getPixelList
+      security: []
+      summary: Returns list of pixels and their state
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pixels'
+    post:
+      tags:
+        - 'Pixels'
+      operationId: postPixelList
+      security:
+        - BasicAuth: [admin]
+      summary: Posts a new list of pixels to the PixelBridge
+      parameters:
+        - name: pixellist
+          in: header
+          description: pixel list
+          required: true
+          schema:
+            type: object
+            $ref: '#/components/schemas/Pixels'
+      responses:
+        '200':
+          description: 'OK'
+        '401':
+          description: 'Not Authenticated'
+  /sensors:
+    get:
+      tags:
+        - 'Sensors'
+      operationId: getSensorList
+      security: []
+      summary: Returns list of available sensors and their states
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sensors'
+  /config:
+    get:
+      tags:
+        - 'Config'
+      operationId: getConfigList
+      security:
+        - BasicAuth: [admin]
+      summary: Returns list of current config
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+        '401':
+          description: 'Not Authenticated'
+    post:
+      tags:
+        - 'Config'
+      operationId: postConfigList
+      security:
+        - BasicAuth: [admin]
+      summary: Posts the configuration to the PixelBridge
+      parameters:
+        - name: configlist
+          in: header
+          description: config list
+          required: true
+          schema:
+            type: object
+            $ref: '#/components/schemas/Config'
+      responses:
+        '200':
+          description: 'OK'
+        '401':
+          description: 'Not Authenticated'
+
+components:
+  schemas:
+    Pixels:
+      type: array
+      items:
+        type: object
+        properties:
+          roomId:
+            type: integer
+            example: 01
+          windowId:
+            type: integer
+            example: 03
+          rgbValue:
+            type: array
+            items:
+              type: object
+              properties:
+                red:
+                  type: integer
+                  example: 128
+                green:
+                  type: integer
+                  example: 98
+                blue:
+                  type: integer
+                  example: 255
+    Sensors:
+      type: array
+      items:
+        type: object
+        properties:
+          brightness:
+            type: integer
+            example: 128
+          power:
+            type: number
+            example: 93.4
+          sensors:
+            type: array
+            items:
+              type: object
+              properties:
+                sensor1:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      roomId:
+                        type: integer
+                        example: 03
+                      name:
+                        type: string
+                        example: Temperature Sensor
+                      value:
+                        type: number
+                        example: 23.5
+                
+    Config:
+      type: array
+      items:
+        type: object
+        properties:
+          state:
+            type: boolean
+            example: 1
+          brightness:
+            type: integer
+            example: 128
+          onTimer:
+            type: string
+            format: time-hour
+            example: 10
+          offTimer:
+            type: string
+            format: time-hour
+            example: 14
+          modes:
+            type: array
+            example: {}
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
